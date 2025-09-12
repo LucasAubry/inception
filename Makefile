@@ -1,20 +1,35 @@
-all: up
+NAME = inception
 
-up:
-	@mkdir -p /home/$(USER)/data/wordpress
-	@mkdir -p /home/$(USER)/data/mariadb
-	docker-compose -f docker-compose.yml up -d --build
+DOCKER_COMPOSE_CMD = docker compose
+DOCKER_COMPOSE_PATH = srcs/docker-compose.yaml
+
+all:
+	@if [ -f "./srcs/.env" ]; then													\
+		mkdir -p /home/laubry/data/mariadb;										\
+		mkdir -p /home/laubry/data/wordpress;										\
+		cd srcs && $(DOCKER_COMPOSE_CMD) up --build -d; 							\
+	else																			\
+		echo "No .env file found in /srcs folder, please create one using example.env before trying to build";	\
+	fi
+
+stop:
+	cd srcs && $(DOCKER_COMPOSE_CMD) stop
 
 down:
-	docker-compose -f docker-compose.yml down
-
-clean: down
+	cd srcs && $(DOCKER_COMPOSE_CMD) down -v --remove-orphans
 	docker system prune -af
 
-fclean: clean
+clean: down
+	rm -rf /home/laubry/data/mariadb/*
+	rm -rf /home/laubry/data/wordpress/*
 	docker volume prune -f
-	sudo rm -rf /home/$(USER)/data
+	docker network prune -f
 
-re: fclean all
+fclean: clean
+	docker rmi -f $$(docker images -q) 2>/dev/null || true
+	docker system prune -af --volumes
 
-.PHONY: all up down clean fclean re
+re: down all
+
+.PHONY: all stop down clean fclean re
+

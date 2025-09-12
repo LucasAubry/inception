@@ -1,43 +1,28 @@
-FROM alpine:3.19
+FROM alpine:3.21.4
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache \
-    php81 \
-    php81-fpm \
-    php81-mysqli \
-    php81-json \
-    php81-curl \
-    php81-dom \
-    php81-exif \
-    php81-fileinfo \
-    php81-mbstring \
-    php81-openssl \
-    php81-xml \
-    php81-zip \
-    php81-phar \
-    wget \
-    unzip && \
-    rm -rf /var/cache/apk/*
+# Définition des URLs pour éviter les répétitions
+ENV WP_VERSION=6.8.2 \
+    WP_CLI_VERSION=2.12.0 \
+    WP_CLI_URL=https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar \
+    WP_URL=https://wordpress.org/wordpress-6.8.2.tar.gz
 
-#install wp-cli
-RUN wget -O wp-cli.phar https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+# Installation des dépendances et téléchargement de WordPress + WP-CLI
 
-#cree lutilisateur www-data
-RUN adduser -D -S -s /bin/false www-data
+RUN apk update --no-cache \
+    && apk add --no-cache wget php83 php83-fpm php83-mbstring php83-phar php83-tokenizer php83-mysqli mariadb-client \
+    && wget -q $WP_URL -P /var/www \
+    && tar -xzf /var/www/wordpress-${WP_VERSION}.tar.gz -C /var/www \
+    && rm /var/www/wordpress-${WP_VERSION}.tar.gz \
+    && adduser -D -G www-data -u 82 www-data \
+    && chown -R www-data:www-data /var/www/wordpress \
+    && wget -q -O /usr/local/bin/wp $WP_CLI_URL \
+    && chmod +x /usr/local/bin/wp
 
-#copy la configuration
-COPY conf/www.conf /etc/php81/php-fpm.d/www.conf
-COPY tools/entrypoint.sh /entrypoint.sh
+# Configuration de PHP-FPM
+COPY conf/www.conf /etc/php83/php-fpm.d/www.conf
+COPY tools/script.sh /tools/script.sh
 
-RUN chmod +x /entrypoint.sh && \
-    mkdir -p /var/www/html && \
-    chown -R www-data:www-data /var/www/html
+RUN chmod +x /tools/script.sh
 
-WORKDIR /var/www/html
-
-EXPOSE 9000
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php-fpm81", "-F"]
+# Commande d’exécution du conteneur
+CMD [ "/tools/script.sh" ]

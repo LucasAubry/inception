@@ -1,19 +1,33 @@
-FROM alpine:3.19
+FROM alpine:3.21.4
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache nginx openssl && \
-    rm -rf /var/cache/apk/*
+RUN apk update --no-cache                                                                                   \
+                                                                                                            \
+    && apk add --no-cache                                                                                   \
+        openssl                                                                                             \
+        nginx                                                                                               \
+                                                                                                            \
+    && rm -f /etc/nginx/http.d/default.conf                                                                 \
+                                                                                                            \
+    && mkdir -p                                                                                             \
+                /etc/nginx/ssl                                                                              \
+                /var/run/nginx                                                                              \
+                /var/www/wordpress                                                                          \
+                                                                                                            \
+    && openssl req                                                                                          \
+        -x509                                                                                               \
+        -nodes                                                                                              \
+        -days 365                                                                                           \
+        -newkey rsa:2048                                                                                    \
+        -out /etc/nginx/ssl/inception.crt                                                                   \
+        -keyout /etc/nginx/ssl/inception.key                                                                \
+        -subj "/C=FR/L=Le Havre/O=42 Le Havre/OU=42/CN=laubry.42.fr/UID=laubry"                         \
+                                                                                                            \
+		&& sed -i 's/^\(\s*\)ssl_protocols\s\+.*/\1ssl_protocols TLSv1.2 TLSv1.3;/' /etc/nginx/nginx.conf
 
-#cree les repertoir utile
-RUN mkdir -p /etc/nginx/ssl /var/www/html /run/nginx
+COPY	conf/nginx.conf		/etc/nginx/http.d/nginx.conf
 
-#copy le configuration
-COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY tools/entrypoint.sh /entrypoint.sh
+RUN		chmod 755 /var/www/wordpress
 
-RUN chmod +x /entrypoint.sh
+EXPOSE	443
 
-EXPOSE 443
-
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+CMD		["nginx", "-g", "daemon off;"]

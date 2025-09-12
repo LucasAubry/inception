@@ -1,19 +1,16 @@
-FROM alpine:3.19
+FROM alpine:3.21.4
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache mariadb mariadb-client && \
-    rm -rf /var/cache/apk/*
+RUN apk update --no-cache                                           \
+    && apk add --no-cache mariadb mariadb-client gettext-envsubst   \
+    && mkdir -p /var/lib/mysql /run/mysqld                          \
+    && chown -R mysql:mysql /var/lib/mysql /run/mysqld
 
-# copy les fichiers de configuration
-COPY conf/50-server.cnf /etc/my.cnf.d/50-server.cnf
-COPY tools/entrypoint.sh /entrypoint.sh
+COPY conf/mariadb-server.cnf /etc/my.cnf.d/mariadb-server.cnf
+COPY tools/init.sql /tools/init.sql
+COPY tools/init-sql.sh /tools/init-sql.sh
 
-RUN chmod +x /entrypoint.sh && \
-    mkdir -p /var/lib/mysql /run/mysqld && \
-    chown -R mysql:mysql /var/lib/mysql /run/mysqld
+RUN chmod +x /tools/init-sql.sh
 
-EXPOSE 3306
+USER mysql
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["mysqld", "--user=mysql"]
-
+CMD ["/tools/init-sql.sh"]
