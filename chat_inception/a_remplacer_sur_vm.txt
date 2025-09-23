@@ -1,8 +1,0 @@
-mkdir -p srcs/requirements/nginx/conf/certs
-openssl req -x509 -nodes -days 365 \
-  -newkey rsa:4096 \
-  -keyout srcs/requirements/nginx/conf/certs/yourlogin.42.fr.key \
-  -out srcs/requirements/nginx/conf/certs/yourlogin.42.fr.crt \
-  -subj "/CN=yourlogin.42.fr/O=42/"
-
- #(En soutenance, si tu veux un vrai cert, utilise Let's Encrypt — mais pour local c’est ok.)

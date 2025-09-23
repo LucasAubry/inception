@@ -1,33 +1,15 @@
-FROM alpine:3.21.4
+FROM alpine:3.18.6
 
-RUN apk update --no-cache                                                                                   \
-                                                                                                            \
-    && apk add --no-cache                                                                                   \
-        openssl                                                                                             \
-        nginx                                                                                               \
-                                                                                                            \
-    && rm -f /etc/nginx/http.d/default.conf                                                                 \
-                                                                                                            \
-    && mkdir -p                                                                                             \
-                /etc/nginx/ssl                                                                              \
-                /var/run/nginx                                                                              \
-                /var/www/wordpress                                                                          \
-                                                                                                            \
-    && openssl req                                                                                          \
-        -x509                                                                                               \
-        -nodes                                                                                              \
-        -days 365                                                                                           \
-        -newkey rsa:2048                                                                                    \
-        -out /etc/nginx/ssl/inception.crt                                                                   \
-        -keyout /etc/nginx/ssl/inception.key                                                                \
-        -subj "/C=FR/L=Le Havre/O=42 Le Havre/OU=42/CN=laubry.42.fr/UID=laubry"                         \
-                                                                                                            \
-		&& sed -i 's/^\(\s*\)ssl_protocols\s\+.*/\1ssl_protocols TLSv1.2 TLSv1.3;/' /etc/nginx/nginx.conf
+RUN apk update && apk upgrade
+RUN apk add nginx
+RUN apk add openssl
 
-COPY	conf/nginx.conf		/etc/nginx/http.d/nginx.conf
+RUN mkdir /etc/nginx/ssl
+RUN openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt -keyout /etc/nginx/ssl/inception.key -subj "/C=FR/ST=IDF/L=HAVRE/O=42/OU=42/CN=laubry.42.fr/UID=laubry"
 
-RUN		chmod 755 /var/www/wordpress
+RUN rm -rf /etc/nginx/http.d/default.conf
+COPY conf/nginx.conf /etc/nginx/http.d/inception.conf
 
-EXPOSE	443
+EXPOSE 443
 
-CMD		["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

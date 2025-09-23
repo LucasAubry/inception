@@ -1,0 +1,13 @@
+DB_NAME=bob
+DB_USER=bob
+DB_PASS=bob
+
+WP_URL=https://laubry.42.fr
+WP_TITLE=bob
+WP_ADMIN_EMAIL=bob@bob.boobs
+WP_ADMIN=boobs
+WP_ADMIN_PASS=boobs
+
+WP_USER=bob
+WP_USER_EMAIL=bob@bob.bob
+WP_USER_PASS=bob
