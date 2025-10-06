@@ -47,12 +47,12 @@ volumes:
   wordpress:
     driver_opts:
       type: none
-      device: /Users/lucasaubry/data/wordpress
+      device: /home/bob/data/wordpress
       o: bind
   mariadb:
     driver_opts:
       type: none
-      device: /Users/lucasaubry/data/mariadb
+      device: /home/bob/data/mariadb
       o: bind
 
 networks:

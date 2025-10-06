@@ -1,0 +1,13 @@
+DB_NAME=bob
+DB_USER=bob
+DB_PASS=bob
+
+WP_URL=laubry.42.fr
+WP_TITLE=boobbies
+WP_ADMIN_EMAIL=laubry@student.42lehavre.fr
+WP_ADMIN=boob
+WP_ADMIN_PASS=boob
+WP_USER=bo0b
+WP_USER_EMAIL=bob@gmail.com
+WP_USER_PASS=bo0b
+
